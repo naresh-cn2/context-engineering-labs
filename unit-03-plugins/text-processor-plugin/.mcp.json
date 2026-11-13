@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "text-processor": {
+      "command": "python",
+      "args": ["../../unit-02-mcp/text-processor-mcp/server.py"]
+    }
+  }
+}
+

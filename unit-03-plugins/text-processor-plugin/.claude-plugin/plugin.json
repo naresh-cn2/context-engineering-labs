@@ -1,0 +1,10 @@
+{
+  "name": "text-processor-plugin",
+  "version": "1.0.0",
+  "description": "Text analysis skills and workflows powered by the text-processor MCP server",
+  "author": {
+    "name": "nares"
+  },
+  "keywords": ["text-analysis", "readability", "keywords", "nlp", "mcp"]
+}
+

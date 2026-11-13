@@ -1,0 +1,22 @@
+====================================================================
+          HUGGING FACE DATASET VALIDATION REPORT
+====================================================================
+Target File:      {filepath}
+Detected Format:  {format}
+Overall Status:   {status}
+--------------------------------------------------------------------
+DATASET DIMENSIONS & MEMORY:
+  Total Rows:     {rows}
+  Total Columns:  {columns_count}
+  Memory Footprint: {memory_mb} MB
+
+COLUMN SCHEMA SPECIFICATION:
+{columns_schema}
+
+DATA QUALITY DIAGNOSTICS:
+{diagnostics}
+
+REMEDIATION RECOMMENDATIONS:
+{recommendations}
+====================================================================
+

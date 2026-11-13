@@ -1,0 +1,5 @@
+text,label,split
+"Antigravity is an agentic AI assistant.",1,train
+"Context engineering optimizes prompt and tool retrieval.",1,train
+"Machine learning models require clean training datasets.",0,test
+

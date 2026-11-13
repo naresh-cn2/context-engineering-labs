@@ -1,0 +1,4 @@
+content,category,split
+"This dataset lacks the required text and label columns.",general,train
+"Another row without the proper schema.",news,test
+

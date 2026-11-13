@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PreToolUse":  [{ "matcher": "*", "hooks": [{ "type": "http", "url": "http://localhost:8000/event", "headers": { "X-Platform": "codex" } }] }],
+    "PostToolUse": [{ "matcher": "*", "hooks": [{ "type": "http", "url": "http://localhost:8000/event", "headers": { "X-Platform": "codex" } }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "http", "url": "http://localhost:8000/event", "headers": { "X-Platform": "codex" } }] }],
+    "Stop":            [{ "hooks": [{ "type": "http", "url": "http://localhost:8000/event", "headers": { "X-Platform": "codex" } }] }],
+    "SessionStart":    [{ "hooks": [{ "type": "http", "url": "http://localhost:8000/event", "headers": { "X-Platform": "codex" } }] }]
+  }
+}
+
