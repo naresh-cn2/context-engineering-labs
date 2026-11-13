@@ -14,30 +14,38 @@ against their automated test suites. The repository is ready for publication.
 
 | Unit | Project | Tests | Result |
 | :--- | :--- | :--- | :--- |
-| Unit 1 | `hf-dataset-validation` | 10/10 | Pass |
-| Unit 2 | `text-processor-mcp` | 9/9 | Pass |
-| Unit 3 | `text-processor-plugin` | 5/5 | Pass |
-| Unit 4 | `code-quality-pipeline` | 10/10 | Pass |
-| Unit 5 | `agent-activity-dashboard` | 6/6 | Pass |
-| Unit 6 | `nano_harness` | 9/9 | Pass |
-| Integration & audit | `tests/integration_audit_test.py` | 12/12 | Pass |
-| **Total** | — | **61/61** | **All passing** |
+| Unit 1 | `hf-dataset-validation` | 10/10 | PASS - OpenCode skill discovery and execution verified |
+| Unit 2 | `text-processor-mcp` | 9/9 | PASS - 5 MCP tools verified |
+| Unit 3 | `text-processor-plugin` | 5/5 | PARTIAL - local plugin loading unsupported by OpenCode v2.2.6 |
+| Unit 4 | `code-quality-pipeline` | 10/10 | PARTIAL - deterministic orchestration simulation; actual LLM-powered subagent execution not demonstrated |
+| Unit 5 | `agent-activity-dashboard` | 6/6 | Verified - SSE event forwarding demonstrated; distinct from automatic plugin-hook execution |
+| Unit 6 | `nano_harness` | 9/9 | Verified - sandbox limitations documented |
+| Integration and audit | `tests/integration_audit_test.py` | 12/12 | Pass |
+| **Total** | - | **61/61** | **All passing** |
 
 ## What the integration suite covers (live, non-mocked)
 
-- **Unit 1:** Skill spec validity; clean CSV → PASS (3 rows); flawed CSV →
-  WARNING (≥ 3 warnings); CLI exit codes.
-- **Unit 2:** Live MCP tool invocation — `analyze_text`, `extract_keywords`,
-  `check_reading_level`, `reverse_text`, `detect_sentiment`.
-- **Unit 3:** Cross-platform plugin manifests (Claude / Codex); `.mcp.json`
-  link resolves to the Unit 2 server (`../../unit-02-mcp/...`).
-- **Unit 4:** Multi-agent pipeline execution — researcher risk detection
-  (N+1, token), parallel security/performance review, orchestrator sign-off.
-- **Unit 5:** Real hook event delivery via `POST /event`; `GET /health`
-  count reporting; FastAPI/Gradio receiver.
-- **Unit 6:** Nano Harness security — path traversal blocked, absolute path
+- **Unit 1:** OpenCode skill discovery verified. Clean CSV -> PASS (3 rows);
+  flawed CSV -> WARNING (>= 3 warnings); CLI exit codes correct.
+- **Unit 2:** Live MCP tool invocation - all 5 tools verified:
+  `analyze_text`, `extract_keywords`, `check_reading_level`,
+  `reverse_text`, `detect_sentiment`.
+- **Unit 3:** Cross-platform plugin manifests (Claude / Codex) valid; `.mcp.json`
+  link resolves to the Unit 2 server (`../../unit-02-mcp/...`); local plugin
+  loading unsupported by OpenCode v2.2.6 (PARTIAL).
+- **Unit 4:** Multi-agent pipeline execution - deterministic researcher,
+  implementer, parallel security/performance review, orchestrator sign-off.
+  Not LLM-powered; actual LLM-powered subagent execution not demonstrated
+  (PARTIAL).
+- **Unit 5:** Real hook event delivery via `POST /event`; SSE event forwarding
+  demonstrated. The dashboard receives and displays events via HTTP - this is
+  explicitly distinct from automatic plugin-hook execution (the dashboard does
+  not itself trigger agent hooks). `GET /health` count reporting; FastAPI/Gradio
+  receiver.
+- **Unit 6:** Nano Harness security - path traversal blocked, absolute path
   escape blocked, disallowed shell commands blocked, write gating enforced,
-  agent-loop observation/reflection (`final_answer`).
+  agent-loop observation/reflection (`final_answer`). Sandbox limitations
+  documented: confinement in Python, not OS-level.
 
 ## Environment used for verification
 
