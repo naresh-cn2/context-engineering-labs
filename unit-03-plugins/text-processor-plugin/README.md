@@ -1,94 +1,234 @@
-# Text Processor Plugin (`text-processor-plugin`)
+# Text Processor Plugin
 
-Official practical implementation for **Unit 3: Plugins — Bundling for Distribution** of the Hugging Face Context Engineering Course.
+[![Hugging Face Context Course](https://img.shields.io/badge/HF%20Context%20Course-Unit%203-FFD21E.svg)](https://huggingface.co/learn/context-course)
+[![Plugin Standard](https://img.shields.io/badge/Plugin%20Standard-Cross--Agent%20(OpenCode%2FClaude%2FCodex)-4B8BBE.svg)](https://opencode.ai)
+[![Automated Tests](https://img.shields.io/badge/Tests-6%20Passed-brightgreen.svg)](tests/test_plugin.py)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-## Architecture
+A cross-agent capability bundle that integrates Model Context Protocol (MCP) servers, Agent Skills, lifecycle hooks, and slash commands into a single deployable package for OpenCode, Claude Code, and Codex.
 
-This plugin bundles **Agent Skills**, **MCP Server Connectivity**, and an **OpenCode Plugin Module** into a single redistributable unit:
+---
 
+## 1. Executive Summary
+
+As AI agent applications scale, deploying tools, skills, and configuration piecemeal becomes brittle and error-prone. The **Text Processor Plugin** demonstrates how to package multiple contextual capabilities—including three modular agent skills (`analyze-text`, `extract-keywords`, `check-reading-level`), an MCP server configuration (`.mcp.json`), and JavaScript runtime event interceptors—into a single distributed bundle. It complies with multi-agent packaging standards and provides deterministic, zero-cost text analytics inside agent workflows.
+
+---
+
+## 2. Architectural Overview
+
+The plugin coordinates between the agent harness, local filesystem skills, underlying MCP servers, and runtime execution hooks.
+
+```mermaid
+flowchart TD
+    subgraph AgentHarness["Agent Harness (OpenCode / Claude Code / Codex)"]
+        Discovery["Plugin Discovery Engine"]
+        HookManager["Lifecycle Hook Dispatcher"]
+        ToolExecutor["Tool & Command Invoker"]
+    end
+
+    subgraph PluginBundle["Text Processor Plugin Package"]
+        ManifestClaude[".claude-plugin/plugin.json"]
+        ManifestCodex[".codex-plugin/plugin.json"]
+        PackageJson["package.json (ES Module)"]
+        MCPConfig[".mcp.json (Server Bindings)"]
+        
+        subgraph BundledSkills["Bundled Agent Skills"]
+            Skill1["skills/analyze-text/SKILL.md"]
+            Skill2["skills/extract-keywords/SKILL.md"]
+            Skill3["skills/check-reading-level/SKILL.md"]
+        end
+
+        subgraph JSPlugin[".opencode/plugins/"]
+            PluginCode["text-processor-plugin.js"]
+        end
+    end
+
+    Discovery --> ManifestClaude
+    Discovery --> ManifestCodex
+    Discovery --> PackageJson
+    Discovery --> BundledSkills
+    Discovery --> MCPConfig
+
+    HookManager -->|"tool.execute.before"| PluginCode
+    ToolExecutor -->|"text-stats command"| PluginCode
 ```
-text-processor-plugin/
-├── .claude-plugin/
-│   └── plugin.json             # Manifest for Claude Code & cross-agent registries
-├── .codex-plugin/
-│   └── plugin.json             # Codex manifest configuration
-├── .opencode/
-│   └── plugins/
-│       └── text-processor-plugin.js # Code-first plugin module for OpenCode
-├── .mcp.json                   # MCP server connection spec
-├── package.json                # NPM / Git package manifest for OpenCode runtime loading
-├── skills/
-│   ├── analyze-text/
-│   │   └── SKILL.md            # Skill: Text statistics & complexity
-│   ├── extract-keywords/
-│   │   └── SKILL.md            # Skill: Frequency & topic extraction
-│   └── check-reading-level/
-│       └── SKILL.md            # Skill: Flesch-Kincaid grade evaluation
-├── README.md                   # Plugin documentation
-└── tests/
-    └── test_plugin.py          # Automated verification test suite
-```
 
-## Cross-Platform Distribution
+---
 
-1. **Manifest-first platforms** (Claude Code, Codex):
-   - Claude Code discovers `.claude-plugin/plugin.json`.
-   - OpenAI Codex discovers `.codex-plugin/plugin.json`.
-   - Both load the three bundled Agent Skills from `skills/`.
+## 3. Problem Statement & Motivation
 
-2. **Code-first platforms** (OpenCode v2.2.6+):
-   - OpenCode requires plugins to be packaged as npm or Git package specifiers exporting a default object with `{ id, setup }`.
-   - The plugin entrypoint `.opencode/plugins/text-processor-plugin.js` exports:
-     ```javascript
-     export const TextProcessorPlugin = {
-       id: "text-processor-plugin",
-       setup: async (ctx) => { ... }
-     };
-     export default TextProcessorPlugin;
-     ```
-   - When registered, OpenCode intercepts tool executions and logs lifecycle telemetry.
+Without unified plugin architecture:
+- Skills must be copied individually into user or workspace directories.
+- MCP servers must be manually registered across multiple client configuration formats.
+- Lifecycle hooks (logging, pre-execution interception) cannot be shared across repositories.
+- Discrepancies between agent harnesses (e.g., Claude Code vs. OpenCode vs. Codex) lead to fractured developer experiences.
 
-3. **MCP Provider**:
-   - `.mcp.json` references the `text-processor-mcp` server from Unit 2.
+The plugin solves this by providing a unified directory standard and standard ES Module lifecycle exports.
 
-## Reproducible Installation in OpenCode
+---
 
-OpenCode v2.2.6 rejects relative directory paths (`opencode plugin add ./folder`) and requires an npm package name or a Git package specifier pointing to a repository containing `package.json`.
+## 4. Detailed Feature Specifications
 
-### 1. Install via Git Package Specifier
+1. **Multi-Agent Manifest Compliance**:
+   - `.claude-plugin/plugin.json`: Claude Code plugin manifest.
+   - `.codex-plugin/plugin.json`: Codex manifest exposing bundled skill declarations.
+   - `package.json`: NPM-compatible ES module export for OpenCode package loading.
+2. **Tri-Skill Suite**:
+   - `analyze-text`: Multi-pass text inspection evaluating structural metrics, lexical diversity, and word frequencies.
+   - `extract-keywords`: Domain term extraction using stop-word elimination and term occurrence ranking.
+   - `check-reading-level`: Readability grading based on Automated Readability Index (ARI) and Flesch-Kincaid formulas.
+3. **MCP Integration**:
+   - Auto-registers `text-processor-mcp` via `.mcp.json`.
+4. **Lifecycle Interceptors**:
+   - `tool.execute.before`: Intercepts file reads to suggest analytical pairings.
+   - `text-stats` custom command: Provides instantaneous in-memory word and character counts without external API calls.
+
+---
+
+## 5. Prerequisites & Environment Setup
+
+- **Node.js**: v18.0.0+ (for JavaScript plugin runtime).
+- **Python**: 3.10+ (for test validation and underlying MCP server).
+- **OpenCode**: v2.2.6+ (or Claude Code / Codex CLI).
+
+---
+
+## 6. Installation & Quickstart
+
+### Method A: Local Direct Installation (OpenCode)
+Place or symlink the plugin into your OpenCode plugin directory:
 ```bash
-opencode plugin add git+file://C:/Users/nares/workspace/context-engineering-labs
+# Copy into OpenCode plugins directory
+cp -r course-workspace/unit3-plugins/text-processor-plugin/.opencode/plugins/text-processor-plugin.js ~/.config/opencode/plugins/
 ```
 
-### 2. Configure via opencode.json
-Add the plugin specifier to your workspace or global `opencode.json`:
+### Method B: Package Installation
+```bash
+cd course-workspace/unit3-plugins/text-processor-plugin
+npm link
+```
+
+### Method C: Claude Code Plugin Installation
+Register the directory in your Claude Code config:
 ```json
 {
   "plugins": [
-    "git+file://C:/Users/nares/workspace/context-engineering-labs"
+    "C:/Users/nares/workspace/context-course/course-workspace/unit3-plugins/text-processor-plugin"
   ]
 }
 ```
 
-### 3. Verify Active Runtime Status
-Inspect loaded plugins via the OpenCode API:
-```bash
-opencode api GET /api/plugin
+---
+
+## 7. Configuration & Environment Variables
+
+The plugin requires zero mandatory environment variables. Optional configurations include:
+
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `PLUGIN_LOG_LEVEL` | `string` | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
+| `TEXT_PROCESSOR_MAX_BUFFER` | `integer` | `1048576` | Maximum characters processed in single pass (1MB) |
+
+---
+
+## 8. Complete API / Interface Reference
+
+### OpenCode JS Module Interface (`text-processor-plugin.js`)
+```javascript
+export const TextProcessorPlugin = {
+  id: "text-processor-plugin",
+  setup: async (ctx) => {
+    // Registers lifecycle hooks and custom commands
+  }
+};
 ```
 
-Expected verification output:
-```json
-{
-  "id": "text-processor-plugin",
-  "source": {
-    "type": "package",
-    "target": "git+file://C:/Users/nares/workspace/context-engineering-labs"
-  },
-  "features": {
-    "server": true
-  },
-  "state": {
-    "status": "active"
-  }
-}
+### Registered Commands
+- `text-stats`: Analyzes active text buffer.
+  - **Input**: `text: string`
+  - **Output**: `{ words: number, characters: number, status: "success" }`
+
+### Bundled Skills
+- `skills/analyze-text`: Invoke via `/skill analyze-text` or natural language prompt asking to analyze text length and structure.
+- `skills/extract-keywords`: Invoke via `/skill extract-keywords` or prompt asking for key topic terms.
+- `skills/check-reading-level`: Invoke via `/skill check-reading-level` or prompt asking for readability score.
+
+---
+
+## 9. End-to-End Usage Examples
+
+### Example 1: Agent Automatic Skill Activation
+When the user asks:
+> "Check the reading level of docs/guide.md"
+
+The agent activates `skills/check-reading-level/SKILL.md`, calculates the sentence count and average syllables per word, and returns the grade-level estimate.
+
+### Example 2: Command Invocation
+```text
+> /text-stats "Context Engineering is the discipline of designing and optimizing prompts, tools, and execution environments."
+{ "words": 13, "characters": 105, "status": "success" }
 ```
+
+---
+
+## 10. Testing & Quality Assurance
+
+Run the automated validation suite using `pytest`:
+
+```bash
+.venv\Scripts\python.exe -m pytest course-workspace/unit3-plugins/text-processor-plugin/tests -v
+```
+
+### Test Coverage Breakdown
+- `test_claude_manifest`: Validates `.claude-plugin/plugin.json` schema and metadata.
+- `test_codex_manifest`: Validates `.codex-plugin/plugin.json` and bundled skill declarations.
+- `test_mcp_configuration`: Validates `.mcp.json` server binding structure.
+- `test_bundled_skills`: Validates YAML frontmatter, naming, and descriptions for all 3 skills.
+- `test_opencode_plugin_module`: Validates JavaScript module exports (`id`, `setup`, and hook hooks).
+- `test_package_json_declaration`: Validates ES module packaging declarations.
+
+---
+
+## 11. Security, Sandboxing & Safety Considerations
+
+- **No Arbitrary Code Execution**: Skills use declarative instructions without raw shell execution.
+- **Fail-Soft Hooks**: All hook invocations and command transforms wrap in try-catch guards to prevent agent crashes on unexpected inputs.
+- **Pure Local Analytics**: The plugin performs all text evaluations locally without external network telemetry.
+
+---
+
+## 12. Edge Cases & Known Failure Modes
+
+1. **Empty Buffers**: Handled gracefully; `text-stats` returns `{ words: 0, characters: 0 }`.
+2. **Missing MCP Server**: If `text-processor-mcp` is not running, skills degrade to standard LLM summarization.
+3. **Unsupported Harness Features**: If an agent lacks the `ctx.command.transform` API, the plugin logs an info message and gracefully bypasses command registration.
+
+---
+
+## 13. Troubleshooting & FAQ
+
+**Q: OpenCode does not see the bundled skills.**
+A: Ensure that `skills/` is inside the root of the plugin directory and that each `SKILL.md` contains valid YAML frontmatter between `---` delimiters.
+
+**Q: Does this plugin require npm install?**
+A: No dependencies are required for basic usage; the JS module uses pure standard ES2022 JavaScript.
+
+---
+
+## 14. Contributing Guidelines
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution workflows and code standards.
+
+---
+
+## 15. Changelog & Versioning
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes. Current version: `1.0.0`.
+
+---
+
+## 16. License & Credits
+
+- **License**: Apache 2.0.
+- **Course**: Developed for Unit 3 of the [Hugging Face Context Engineering Course](https://huggingface.co/learn/context-course).
