@@ -15,6 +15,24 @@ export const TextProcessorPlugin = {
       });
     }
 
+    if (ctx?.command?.transform) {
+      try {
+        await ctx.command.transform((commands) => {
+          commands.add({
+            name: "text-stats",
+            description: "Compute word count and readability statistics for a text buffer",
+            execute: async (args) => {
+              const text = typeof args === "string" ? args : "";
+              const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+              return { words, characters: text.length, status: "success" };
+            },
+          });
+        });
+      } catch {
+        // Fallback gracefully if commands transform is unsupported
+      }
+    }
+
     return {
       "tool.execute.before": async (input) => {
         if (input?.tool === "read" && ctx?.app?.log) {
