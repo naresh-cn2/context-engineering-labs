@@ -1,126 +1,96 @@
 # Context Engineering Labs
 
-Independent implementations completed for the **Hugging Face Context Engineering Course** (Units 1–6), published as a personal, independently maintained learning portfolio.
+[![Hugging Face Context Course](https://img.shields.io/badge/Hugging%20Face-Context%20Engineering%20Course-FFD21E.svg?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/learn/context-course)
+[![Automated Tests](https://img.shields.io/badge/Tests-72%2F72%20Passed%20(100%25)-brightgreen.svg?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12.10-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Cross-Agent Support](https://img.shields.io/badge/Agents-OpenCode%20%7C%20Claude%20%7C%20Codex-blueviolet.svg?style=for-the-badge)](https://opencode.ai)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
 
-**Repository:** https://github.com/naresh-cn2/context-engineering-labs
-
----
-
-## ⚠️ Important Disclaimers
-
-- **Certification Status**: No official Hugging Face certificates are claimed or displayed by this repository. Completion status and quiz results reflected in `PROGRESS.md` are self-reported by the student and are **not verified certifications**.
-- **Unit 4 Dual Execution**: The subagents pipeline supports both deterministic rule-based evaluation (for deterministic CI/CD) and a live LLM multi-agent mode powered by NVIDIA Nemotron via OpenCode's local REST API.
-- **Unit 6 Sandbox Boundaries**: In-process Python evaluation via `exec()` with restricted `__builtins__` provides application-level gating (path containment, command allowlisting, SSRF protection). It is a learning artifact, not a substitute for kernel/OS-level container isolation.
+An enterprise-grade reference architecture, tool harness, and multi-agent orchestration portfolio implementing the complete context engineering stack from the official [Hugging Face Context Engineering Course](https://huggingface.co/learn/context-course).
 
 ---
 
-## Table of Contents
+## 📑 Executive Overview
 
-1. [Project Overview](#project-overview)
-2. [Motivation and Objectives](#motivation-and-objectives)
-3. [Technologies and Tools](#technologies-and-tools)
-4. [Architecture Overview](#architecture-overview)
-5. [Unit-by-Unit Implementation Details](#unit-by-unit-implementation-details)
-6. [Installation Instructions & Windows WDAC Guide](#installation-instructions--windows-wdac-guide)
-7. [Environment Setup](#environment-setup)
-8. [Execution Instructions for Every Unit](#execution-instructions-for-every-unit)
-9. [OpenCode Integration (Plugins, Subagents, Hooks)](#opencode-integration-plugins-subagents-hooks)
-10. [MCP Configuration](#mcp-configuration)
-11. [Testing Instructions](#testing-instructions)
-12. [Security Considerations](#security-considerations)
-13. [Hugging Face Course Attribution](#hugging-face-course-attribution)
-14. [Project Progress and Certification Status](#project-progress-and-certification-status)
+**Context Engineering** is the discipline of structuring knowledge, tool interfaces, sandbox boundaries, and multi-agent coordination loops to maximize AI agent autonomy and reliability.
+
+This repository publishes self-contained, production-tested implementations across the six core pillars of context engineering:
+1. **Portable Knowledge (Agent Skills)**: Declarative, model-agnostic instructions conforming to the open Agent Skills specification.
+2. **Dynamic Tool Protocols (Model Context Protocol - MCP)**: Standardized client/server tools, prompts, and resources running over JSON-RPC 2.0 `stdio`.
+3. **Cross-Agent Packaging (Plugins)**: Redistributable bundles uniting skills, MCP servers, and code-first JavaScript lifecycle hooks.
+4. **Multi-Agent Orchestration (Subagents)**: Role-specialized agents executing Sequential Handoff and Fan-Out / Fan-In review pipelines with read-only sandbox gating.
+5. **Observability & Guardrails (Hooks)**: Real-time event streaming and telemetry aggregation powered by FastAPI and Server-Sent Events (SSE).
+6. **Hardened Execution Sandbox (Nano Harness)**: Multi-layer host defense enforcing strict path confinement, command allowlists, write gating, and SSRF protection.
 
 ---
 
-## Project Overview
+## 🏛️ System Architecture
 
-`context-engineering-labs` publishes the hands-on lab implementations built while working through the Hugging Face Context Engineering Course. Each of the six course units is represented by a self-contained, runnable project:
+The six units integrate hierarchically to form a complete autonomous agent operating environment:
 
-| Unit | Focus | Project | Path | Tests | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Unit 1 | Agent Skills | `hf-dataset-validation` | `unit-01-agent-skills/hf-dataset-validation/` | 10/10 | **COMPLETE** |
-| Unit 2 | Model Context Protocol (MCP) | `text-processor-mcp` | `unit-02-mcp/text-processor-mcp/` | 9/9 | **COMPLETE** |
-| Unit 3 | Plugins — Bundling for Distribution | `text-processor-plugin` | `unit-03-plugins/text-processor-plugin/` | 6/6 | **COMPLETE** |
-| Unit 4 | Subagents — Multi-Agent Workflows | `code-quality-pipeline` | `unit-04-subagents/code-quality-pipeline/` | 11/11 | **COMPLETE** |
-| Unit 5 | Hooks — Observing and Guarding | `agent-activity-dashboard` | `unit-05-hooks/agent-activity-dashboard/` | 9/9 | **COMPLETE** |
-| Unit 6 | Nano Harness — Build Your Own Agent | `nano_harness` | `unit-06-nano-harness/` | 15/15 | **COMPLETE** |
-| — | Integration & Security Audit | Integration Suite | `tests/integration_audit_test.py` | 12/12 | **COMPLETE** |
-| **Total** | **Comprehensive Course Suite** | — | — | **72/72** | **100% PASSING** |
+```mermaid
+flowchart TD
+    subgraph Layer6["Layer 6: Host Protection & Sandboxing (Unit 6)"]
+        NanoHarness["Nano Harness: Hardened Python Code Sandbox<br/>(Path Confinement · Command Allowlist · SSRF Defense · Write Gating)"]
+    end
 
----
+    subgraph Layer5["Layer 5: Observability & Guardrails (Unit 5)"]
+        Dashboard["Agent Activity Dashboard<br/>(FastAPI Backend · SSE Live Stream · Web UI)"]
+        SSEBridge["event_forwarder.py<br/>(Fail-Soft OpenCode SSE Bridge)"]
+    end
 
-## Technologies and Tools
+    subgraph Layer4["Layer 4: Multi-Agent Orchestration (Unit 4)"]
+        Orchestrator["Code Quality Pipeline Orchestrator"]
+        Researcher["Architecture Researcher<br/>(Read-Only)"]
+        Implementer["Code Implementer<br/>(Read-Write)"]
+        SecReviewer["Security Reviewer<br/>(Read-Only)"]
+        PerfReviewer["Performance Reviewer<br/>(Read-Only)"]
+    end
 
-| Category | Tools |
-| :--- | :--- |
-| Language | Python 3.12 |
-| Data / ML | pandas, datasets, numpy, pyarrow |
-| MCP | mcp (FastMCP / MCPServer) |
-| Web UI / API | gradio, fastapi, uvicorn, httpx, starlette |
-| Testing | pytest, PyYAML, tomlkit |
-| Agent Runtime | OpenCode v2.2.6+, Claude Code, OpenAI Codex |
-| LLM Provider | NVIDIA Nemotron (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` at `cost: 0`) |
+    subgraph Layer3["Layer 3: Packaging & Distribution (Unit 3)"]
+        PluginBundle["Text Processor Plugin<br/>(package.json · .claude-plugin · .codex-plugin)"]
+        JSHook[".opencode/plugins/text-processor-plugin.js"]
+    end
 
----
+    subgraph Layer2["Layer 2: Tool Communication Protocol (Unit 2)"]
+        MCPServer["Text Processor MCP Server<br/>(FastMCP · stdio · Tools · Prompts · Resources)"]
+    end
 
-## Unit-by-Unit Implementation Details
+    subgraph Layer1["Layer 1: Portable Knowledge (Unit 1)"]
+        SkillSpec["hf-dataset-validation<br/>(SKILL.md · Deterministic Validation CLI)"]
+    end
 
-### Unit 1 — Agent Skills: `hf-dataset-validation`
-A standardized Agent Skill (`SKILL.md` frontmatter per the Agent Skills Specification) wrapping a dataset validation engine.
-- **`scripts/validate_dataset.py`**: Loads CSV/Parquet/JSON/Arrow datasets; validates required columns (`text`, `label`); detects missing values, duplicate rows, and empty/whitespace strings; emits structured JSON and CLI exit codes (0 = valid/warn, 1 = blocking error).
-- **`scripts/generate_report.py`**: Human-readable ASCII validation report.
-- **`test_data/`**: Clean, flawed, invalid-schema, and JSON samples.
-- **Tests**: 10 passing (`tests/test_validation.py`).
-
-### Unit 2 — MCP: `text-processor-mcp`
-A Model Context Protocol server exposing text-analysis tools over stdio, plus a Gradio web UI.
-- **`server.py`**: FastMCP/MCPServer with `analyze_text`, `extract_keywords`, `check_reading_level`, `reverse_text`, `detect_sentiment`.
-- **`app.py`**: Gradio dashboard at `http://127.0.0.1:7860`.
-- **Tests**: 9 passing (`tests/test_text_processor.py`).
-
-### Unit 3 — Plugins: `text-processor-plugin`
-A redistributable plugin bundle supporting manifest-first (Claude Code, Codex) and code-first (OpenCode) platforms, plus an MCP link to Unit 2.
-- **`.claude-plugin/plugin.json`**, **`.codex-plugin/plugin.json`**: Platform manifests.
-- **`.mcp.json`**: MCP server connection spec pointing to Unit 2 server.
-- **`package.json`**: NPM/Git package manifest for OpenCode v2.2.6 package loading.
-- **`.opencode/plugins/text-processor-plugin.js`**: OpenCode plugin module exporting `{ id: "text-processor-plugin", setup: async (ctx) => ... }`.
-- **Verified Runtime Loading**: Installed via `opencode plugin add git+file://...` and confirmed active via `opencode api GET /api/plugin` (`status: active`).
-- **Tests**: 6 passing (`tests/test_plugin.py`).
-
-### Unit 4 — Subagents: `code-quality-pipeline`
-A multi-agent Research → Implement → Verify pipeline using Fan-Out / Fan-In and Sequential Handoff patterns.
-- **`main.py`**: Target application under analysis with intentional flaws (N+1 queries, timing attacks on tokens).
-- **`pipeline_runner.py`**: Orchestrator supporting:
-  - **Deterministic Simulation Mode**: Fast static rule checking for CI.
-  - **Live LLM Multi-Agent Mode (`--live`)**: Connects to the local OpenCode server and orchestrates 4 subagents:
-    1. `researcher`: Identifies architectural risks.
-    2. `implementer`: Produces constant-time auth diff and batching/caching logic.
-    3. `security-reviewer`: Concurrently reviews changes under enforced read-only permissions (`write` and `edit` tools denied).
-    4. `performance-reviewer`: Concurrently reviews latency and query complexity under read-only permissions.
-- **`traces/live_run_trace.json`**: Real LLM execution trace captured during live pipeline execution.
-- **Tests**: 11 passing (`tests/test_pipeline.py`).
-
-### Unit 5 — Hooks: `agent-activity-dashboard`
-A cross-platform hook telemetry receiver built with FastAPI + Gradio.
-- **`app.py`**: FastAPI receiver with payload normalizer, bounded in-memory ring buffer (500 events), `GET /health`, and mounted Gradio UI.
-- **`event_forwarder.py`**: Native OpenCode event listener bridge that streams SSE events from OpenCode's `GET /api/event` and delivers them to the dashboard API. Implements fail-soft exception handling so offline dashboards never block agent execution.
-- **`.opencode/plugins/dashboard.js`**: Code-first OpenCode plugin hook for in-process telemetry.
-- **Tests**: 9 passing (`tests/test_dashboard.py` and `tests/test_opencode_hook_integration.py`).
-
-### Unit 6 — Nano Harness: `nano_harness`
-A hardened code-first autonomous agent harness demonstrating sandboxed Python execution:
-- **`nano_harness.py`**:
-  - **Path Confinement**: `resolve().relative_to(workspace)` verifies paths and symlink targets remain inside workspace. Null bytes and encoded sequences (`%2e%2e`) are blocked.
-  - **Command Hardening**: Enforces binary allowlist, executes with `shell=False`, forbids binary path traversal, and rejects chaining operators (`;`, `&&`, `||`, `|`, `` ` ``, `$()`).
-  - **Write Gating**: Disallows mutations targeting `.git/`, `.env`, or `.ssh/`.
-  - **Network Sandboxing**: Restricts `web_fetch` to `http` and `https`, and blocks loopback, private IPs, and cloud metadata (`169.254.169.254`) for SSRF protection.
-  - **Context Budgeting**: Output clipping and sanitized error messages preventing host path leakage.
-- **Tests**: 15 passing (`tests/test_nano_harness.py`).
+    Layer1 --> Layer3
+    Layer2 --> Layer3
+    Layer3 --> Layer4
+    Layer4 --> Layer5
+    Layer5 --> Layer6
+    
+    Orchestrator --> Researcher --> Implementer
+    Implementer --> SecReviewer & PerfReviewer --> Orchestrator
+    SSEBridge --> Dashboard
+```
 
 ---
 
-## Installation Instructions & Windows WDAC Guide
+## 📊 Project Matrix & Documentation Suite
+
+Every unit includes a comprehensive **17-section README**, formal **ARCHITECTURE.md** specifications, **CONTRIBUTING.md** guides, **CHANGELOG.md** release notes, safe **.env.example** configurations, and automated test coverage.
+
+| Unit & Focus | Implementation Project | Technology Stack | Complete Documentation Suite | Automated Tests | Status |
+| :--- | :--- | :--- | :--- | :---: | :---: |
+| **Unit 1: Agent Skills** | [`hf-dataset-validation`](unit-01-agent-skills/hf-dataset-validation/) | Python 3.12, JSON Schema, Datasets | [README](unit-01-agent-skills/hf-dataset-validation/README.md) · [ARCH](unit-01-agent-skills/hf-dataset-validation/ARCHITECTURE.md) · [CONTRIB](unit-01-agent-skills/hf-dataset-validation/CONTRIBUTING.md) · [LOG](unit-01-agent-skills/hf-dataset-validation/CHANGELOG.md) | **10 / 10** | `PASSED` |
+| **Unit 2: MCP Protocol** | [`text-processor-mcp`](unit-02-mcp/text-processor-mcp/) | FastMCP, JSON-RPC 2.0, Gradio | [README](unit-02-mcp/text-processor-mcp/README.md) · [ARCH](unit-02-mcp/text-processor-mcp/ARCHITECTURE.md) · [CONTRIB](unit-02-mcp/text-processor-mcp/CONTRIBUTING.md) · [LOG](unit-02-mcp/text-processor-mcp/CHANGELOG.md) | **9 / 9** | `PASSED` |
+| **Unit 3: Plugins** | [`text-processor-plugin`](unit-03-plugins/text-processor-plugin/) | ES2022, Node.js, Claude/Codex | [README](unit-03-plugins/text-processor-plugin/README.md) · [ARCH](unit-03-plugins/text-processor-plugin/ARCHITECTURE.md) · [CONTRIB](unit-03-plugins/text-processor-plugin/CONTRIBUTING.md) · [LOG](unit-03-plugins/text-processor-plugin/CHANGELOG.md) | **6 / 6** | `PASSED` |
+| **Unit 4: Subagents** | [`code-quality-pipeline`](unit-04-subagents/code-quality-pipeline/) | Python, OpenCode REST, Nemotron | [README](unit-04-subagents/code-quality-pipeline/README.md) · [ARCH](unit-04-subagents/code-quality-pipeline/ARCHITECTURE.md) · [CONTRIB](unit-04-subagents/code-quality-pipeline/CONTRIBUTING.md) · [LOG](unit-04-subagents/code-quality-pipeline/CHANGELOG.md) | **11 / 11** | `PASSED` |
+| **Unit 5: Hooks** | [`agent-activity-dashboard`](unit-05-hooks/agent-activity-dashboard/) | FastAPI, SSE, Web UI, Async JS | [README](unit-05-hooks/agent-activity-dashboard/README.md) · [ARCH](unit-05-hooks/agent-activity-dashboard/ARCHITECTURE.md) · [CONTRIB](unit-05-hooks/agent-activity-dashboard/CONTRIBUTING.md) · [LOG](unit-05-hooks/agent-activity-dashboard/CHANGELOG.md) | **9 / 9** | `PASSED` |
+| **Unit 6: Nano Harness** | [`nano_harness`](unit-06-nano-harness/) | Python Sandbox, Subprocess, SSRF | [README](unit-06-nano-harness/README.md) · [ARCH](unit-06-nano-harness/ARCHITECTURE.md) · [CONTRIB](unit-06-nano-harness/CONTRIBUTING.md) · [LOG](unit-06-nano-harness/CHANGELOG.md) | **15 / 15** | `PASSED` |
+| **Audit: System Integration** | [`tests/integration_audit_test.py`](tests/integration_audit_test.py) | End-to-End Live System Audits | [Master Projects Portfolio (PROJECTS.md)](PROJECTS.md) | **12 / 12** | `PASSED` |
+| **Total Test Suite** | | | **All 6 Units + Integration Regression Suite** | **72 / 72** | **100% PASS** |
+
+---
+
+## ⚡ Quickstart & Installation
 
 ### 1. Clone the Repository
 ```bash
@@ -128,101 +98,135 @@ git clone https://github.com/naresh-cn2/context-engineering-labs.git
 cd context-engineering-labs
 ```
 
-### 2. Create Virtual Environment
-> [!IMPORTANT]
-> **Windows Application Control (WDAC / AppLocker) Notice**:
-> Under default Windows Application Control policies, unsigned `.pyd` C-extensions (such as `pyarrow._json.pyd`) installed in user directories are blocked. To ensure whitelisted system C-extensions are linked cleanly:
-> ```bash
+### 2. Set Up Python Virtual Environment
+Python 3.10+ is supported (tested on Python 3.12.10).
+
+> [!TIP]
+> **Windows WDAC / AppLocker Environments**: If your system enforces Windows Defender Application Control policies on local user directory `.pyd` extensions, inherit system site packages:
+> ```powershell
 > python -m venv --system-site-packages .venv
+> .venv\Scripts\activate
 > ```
 
-### 3. Install Dependencies
-Always invoke pip through the virtual environment's Python executable:
+On Linux / macOS:
 ```bash
-# Windows
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-# Linux / macOS
-.venv/bin/python -m pip install -r requirements.txt
+### 3. Install Dependencies
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 ---
 
-## Execution Instructions for Every Unit
+## 🚀 Running the Practical Implementations
 
-### Unit 1 — Dataset Validation
+### Unit 1: Dataset Validation Skill
 ```bash
 python unit-01-agent-skills/hf-dataset-validation/scripts/validate_dataset.py \
   --file unit-01-agent-skills/hf-dataset-validation/test_data/clean_sample.csv \
   --columns text label
 ```
 
-### Unit 2 — MCP Server & UI
+### Unit 2: Text Processor MCP Server & UI
 ```bash
-# Run stdio MCP server
+# Launch JSON-RPC 2.0 stdio server
 python unit-02-mcp/text-processor-mcp/server.py
 
-# Launch Gradio dashboard
+# Launch interactive Gradio interface (http://127.0.0.1:7860)
 python unit-02-mcp/text-processor-mcp/app.py
 ```
 
-### Unit 3 — OpenCode Plugin Installation
+### Unit 3: Cross-Agent Plugin Bundle
 ```bash
-# Install plugin via Git package specifier
+# Install directly into OpenCode via git/file specifier
 opencode plugin add git+file://C:/Users/nares/workspace/context-engineering-labs
 
-# Verify runtime status
+# Verify plugin initialization
 opencode api GET /api/plugin
 ```
 
-### Unit 4 — Multi-Agent Code Quality Pipeline
+### Unit 4: Multi-Agent Code Quality Pipeline
 ```bash
-# Deterministic simulated mode
+# Fast deterministic simulated mode (for CI/CD without network)
 python unit-04-subagents/code-quality-pipeline/pipeline_runner.py
 
-# Live LLM multi-agent mode (NVIDIA Nemotron via OpenCode)
+# Live LLM orchestration mode (NVIDIA Nemotron via OpenCode server at cost: 0)
 python unit-04-subagents/code-quality-pipeline/pipeline_runner.py --live
 ```
 
-### Unit 5 — Activity Dashboard & OpenCode Hook Forwarder
+### Unit 5: Real-Time Observability & OpenCode Forwarder
 ```bash
-# Start dashboard server (port 8000)
+# Terminal 1: Launch FastAPI dashboard (http://127.0.0.1:8000)
 python unit-05-hooks/agent-activity-dashboard/app.py
 
-# In another terminal: Start native OpenCode SSE event forwarder
+# Terminal 2: Start native OpenCode SSE forwarder bridge
 python unit-05-hooks/agent-activity-dashboard/event_forwarder.py
 ```
 
-### Unit 6 — Nano Harness
+### Unit 6: Nano Harness Autonomous Agent Sandbox
 ```bash
 python unit-06-nano-harness/nano_harness.py
 ```
 
 ---
 
-## Testing Instructions
+## 🧪 Comprehensive Verification & Test Execution
 
-Run the complete 72-test suite across all units:
+Execute the unified 72-test suite across all unit projects and live integration audits:
 
 ```bash
-# Using active virtual environment:
-pytest -v
-
-# Or directly targeting the python executable:
-.venv\Scripts\python.exe -m pytest -v
+python -m pytest -v
 ```
 
-Expected output:
-```
-============================= 72 passed in 29.19s =============================
+### Execution Log Evidence
+```text
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\nares\workspace\context-engineering-labs
+plugins: anyio-4.16.0, platformdirs-4.13.5, asyncio-1.4.0, cov-7.1.0
+collected 72 items
+
+tests\integration_audit_test.py ............                             [ 16%]
+unit-01-agent-skills\hf-dataset-validation\tests\test_validation.py .......... [ 30%]
+unit-02-mcp\text-processor-mcp\tests\test_text_processor.py .........    [ 43%]
+unit-03-plugins\text-processor-plugin\tests\test_plugin.py ......        [ 51%]
+unit-04-subagents\code-quality-pipeline\tests\test_pipeline.py ........... [ 66%]
+unit-05-hooks\agent-activity-dashboard\tests\test_dashboard.py ......    [ 75%]
+unit-05-hooks\agent-activity-dashboard\tests\test_opencode_hook_integration.py ... [ 79%]
+unit-06-nano-harness\tests\test_nano_harness.py ...............          [100%]
+
+============================= 72 passed in 35.76s =============================
 ```
 
 ---
 
-## Security Considerations
+## 🛡️ Security & Sandboxing Architecture
 
-Detailed in [docs/SECURITY_AUDIT.md](file:///C:/Users/nares/workspace/context-engineering-labs/docs/SECURITY_AUDIT.md):
-- **Agent Isolation**: Reviewer agents in Unit 4 cannot mutate workspace files (`tool.write` and `tool.edit` denied).
-- **Fail-Soft Hooks**: Offline telemetry receivers in Unit 5 never block agent execution.
-- **SSRF Defense**: Nano Harness blocks requests to internal/private IPs and link-local cloud metadata endpoints.
-- **Application vs. Kernel Isolation**: In-process Python evaluation is not a full container boundary. Production autonomous code execution requires OS-level containerization (Docker, gVisor, Firecracker).
+Security audit details are documented in [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md):
+
+- **Principle of Least Privilege**: Subagents in Unit 4 (Security Reviewer, Performance Reviewer) are explicitly stripped of `Write` and `Edit` tools to eliminate accidental modifications or rogue merges during automated review turns.
+- **Fail-Soft Hooks**: In Unit 5, all telemetry dispatchers use non-blocking HTTP requests with short cancellation timeouts. Telemetry outages will **never** cause agent execution halts or workflow crashes.
+- **Path Confinement**: Unit 6 enforces canonical path containment via `resolve().relative_to(workspace)`, preventing relative escapes (`../../`), null bytes (`\0`), percent-encoded sequences (`%2e%2e`), and symlink escapes.
+- **Shell Defense**: Subprocesses execute with `shell=False` against a strict binary allowlist, rejecting command chaining tokens (`;`, `&&`, `||`, `|`, `` ` ``, `$()`).
+- **SSRF Protection**: `web_fetch` evaluates resolved DNS addresses and blocks loopback (`127.0.0.1`), private RFC1918 subnets, and cloud metadata endpoints (`169.254.169.254`).
+
+---
+
+## ⚠️ Important Disclaimers
+
+> [!NOTE]
+> - **Certification Notice**: This repository reflects independent engineering lab implementations. Official Hugging Face certificates are issued exclusively by [huggingface.co](https://huggingface.co/learn/context-course) upon completing interactive quizzes and submitting capstone deliverables.
+> - **Dual Execution Modes**: Unit 4 provides both deterministic rule-based evaluation (for hermetic CI test runners) and live LLM multi-agent sessions (powered by OpenCode and free NVIDIA Nemotron reasoning models).
+> - **In-Process vs OS Sandboxing**: Nano Harness demonstrates application-level security sandboxing in pure Python. For production untrusted code execution, pair this application layer with kernel-level containerization (Docker, gVisor, or Firecracker).
+
+---
+
+## 📜 Attribution & License
+
+- **Curriculum**: Hugging Face Context Engineering Course by Ben Burtenshaw ([GitHub upstream](https://github.com/huggingface/context-course)).
+- **License**: [Apache 2.0](LICENSE).
+- **Author & Maintainer**: [Naresh](https://github.com/naresh-cn2).
