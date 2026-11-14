@@ -1,0 +1,17 @@
+{
+  "name": "text-processor-plugin",
+  "version": "1.0.0",
+  "description": "Text Processor Plugin bundling skills and lifecycle hooks for OpenCode, Claude Code, and Codex",
+  "type": "module",
+  "main": "./.opencode/plugins/text-processor-plugin.js",
+  "exports": {
+    ".": "./.opencode/plugins/text-processor-plugin.js"
+  },
+  "keywords": [
+    "opencode-plugin",
+    "agent-plugin",
+    "context-engineering"
+  ],
+  "author": "Context Course Student",
+  "license": "Apache-2.0"
+}

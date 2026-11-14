@@ -1,0 +1,17 @@
+{
+  "name": "context-engineering-labs",
+  "version": "1.0.0",
+  "description": "Hugging Face Context Engineering Labs - Plugins & Extensions",
+  "type": "module",
+  "main": "./unit-03-plugins/text-processor-plugin/.opencode/plugins/text-processor-plugin.js",
+  "exports": {
+    ".": "./unit-03-plugins/text-processor-plugin/.opencode/plugins/text-processor-plugin.js",
+    "./text-processor": "./unit-03-plugins/text-processor-plugin/.opencode/plugins/text-processor-plugin.js",
+    "./dashboard": "./unit-05-hooks/agent-activity-dashboard/.opencode/plugins/dashboard.js"
+  },
+  "keywords": [
+    "opencode-plugin",
+    "context-engineering"
+  ],
+  "license": "Apache-2.0"
+}
