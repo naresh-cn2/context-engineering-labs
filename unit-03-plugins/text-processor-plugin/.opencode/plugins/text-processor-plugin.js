@@ -4,31 +4,29 @@
  * Implements code-first agent plugin interface for OpenCode runtime.
  */
 
-export const TextProcessorPlugin = async ({ project, client, $, directory, worktree }) => {
-  if (client && client.app && client.app.log) {
-    await client.app.log({
-      body: {
+export const TextProcessorPlugin = {
+  id: "text-processor-plugin",
+  setup: async (ctx) => {
+    if (ctx?.app?.log) {
+      await ctx.app.log({
         service: "text-processor-plugin",
         level: "info",
         message: "Text Processor Plugin initialized successfully.",
-      },
-    });
-  }
+      });
+    }
 
-  return {
-    "tool.execute.before": async (input) => {
-      if (input.tool === "read" && client && client.app && client.app.log) {
-        await client.app.log({
-          body: {
+    return {
+      "tool.execute.before": async (input) => {
+        if (input?.tool === "read" && ctx?.app?.log) {
+          await ctx.app.log({
             service: "text-processor-plugin",
             level: "info",
             message: "Text loaded. Pair with text-processor MCP tools for readability or keyword analysis.",
-          },
-        });
-      }
-    },
-  };
+          });
+        }
+      },
+    };
+  },
 };
 
 export default TextProcessorPlugin;
-
