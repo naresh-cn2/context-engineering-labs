@@ -57,9 +57,9 @@ class TestAgentConfiguration:
 class TestPipelineOrchestration:
     """Verifies sequential handoff and fan-out/fan-in review patterns."""
 
-    def test_pipeline_execution(self):
+    def test_pipeline_execution_simulated(self):
         target = PIPELINE_ROOT / "main.py"
-        pipeline = CodeQualityPipeline(target)
+        pipeline = CodeQualityPipeline(target, mode="simulated")
 
         # Stage 1: Researcher
         research = pipeline.run_researcher()
@@ -68,8 +68,26 @@ class TestPipelineOrchestration:
 
         # Stage 2 & 3: Run pipeline
         result = pipeline.execute_pipeline()
+        assert result["mode"] == "simulated"
         assert result["target"] == "main.py"
         assert "security_verdict" in result
         assert "performance_verdict" in result
+        assert result["security_verdict"]["permission_mode"] == "read_only"
+        assert result["performance_verdict"]["permission_mode"] == "read_only"
         assert isinstance(result["pipeline_signed_off"], bool)
+
+    def test_live_run_trace_artifact(self):
+        trace_path = PIPELINE_ROOT / "traces" / "live_run_trace.json"
+        assert trace_path.exists(), "live_run_trace.json must exist from live multi-agent execution."
+
+        data = json.loads(trace_path.read_text(encoding="utf-8"))
+        assert data.get("mode") == "live"
+        assert data.get("provider") == "nvidia"
+        assert data.get("cost") == 0
+        assert "research" in data
+        assert "security_verdict" in data
+        assert "performance_verdict" in data
+        assert data["security_verdict"]["permission_mode"] == "read_only"
+        assert data["performance_verdict"]["permission_mode"] == "read_only"
+
 

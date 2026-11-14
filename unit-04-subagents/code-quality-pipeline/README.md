@@ -27,17 +27,39 @@ Implements a multi-agent **Research → Implement → Verify** lifecycle using F
    Stage 4: Orchestrator Sign-off (Synthesizes verdicts & approves merge)
 ```
 
-## Agent Definitions
+## Dual Execution Modes
+
+The pipeline supports two distinct execution modes:
+
+1. **Deterministic Simulated Mode (Default)**:
+   - Evaluates code transformations using static pattern matching and rule validation.
+   - Ideal for CI/CD environments and rapid regression testing.
+   ```bash
+   python pipeline_runner.py
+   ```
+
+2. **Live LLM Multi-Agent Mode**:
+   - Connects to the running local OpenCode agent server (`http://127.0.0.1:28894`).
+   - Delegates tasks to real LLM-backed subagents powered by NVIDIA Nemotron (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` at `cost: 0`).
+   - Sequential handoff: The Researcher analyzes `main.py`, extracts architectural patterns and risks, and hands the report to the Implementer.
+   - Parallel evaluation: Security and Performance Reviewers execute concurrently via `ThreadPoolExecutor` under strict read-only confinement (`write` and `edit` tools denied).
+   - Generates full execution traces saved into `traces/live_run_trace.json`.
+   ```bash
+   python pipeline_runner.py --live
+   ```
+
+## Agent Definitions & Confinement
 
 - **`.claude/agents/` & `.codex/agents/`**:
-  - `researcher`: Read-only architecture explorer.
-  - `implementer`: Implementation developer.
-  - `security-reviewer`: Strictly read-only reviewer (no `Write` tools allowed).
-  - `performance-reviewer`: Strictly read-only reviewer.
+  - `researcher`: Read-only architecture explorer (`sandbox: read-only`, `tools: Read, Grep`).
+  - `implementer`: Implementation developer (`sandbox: workspace-write`, `tools: Read, Edit, Write`).
+  - `security-reviewer`: Strictly read-only reviewer (`sandbox: read-only`, `tools: Read, Grep`).
+  - `performance-reviewer`: Strictly read-only reviewer (`sandbox: read-only`, `tools: Read, Grep`).
+
+Reviewer agents are strictly prohibited from mutating files. During live execution, OpenCode enforces `{"action": "write", "resource": "*", "effect": "deny"}` and `{"action": "edit", "resource": "*", "effect": "deny"}` on reviewer sessions.
 
 ## Verification
 
 ```bash
 python -m pytest tests/test_pipeline.py -v
 ```
-
