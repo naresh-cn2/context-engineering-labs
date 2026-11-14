@@ -1,38 +1,66 @@
 /**
- * OpenCode Lifecycle Hook Plugin
- * Sends real-time tool execution telemetry to the Agent Activity Dashboard.
+ * OpenCode Lifecycle Hook Plugin: Agent Activity Dashboard
+ *
+ * Implements code-first agent plugin interface for OpenCode runtime.
+ * Forwards tool and agent lifecycle telemetry to the dashboard API.
  */
 
-const URL = process.env.DASHBOARD_URL || "http://localhost:8000/event";
+const DASHBOARD_URL = process.env.DASHBOARD_URL || "http://localhost:8000/event";
 
-async function send(event, payload) {
+async function sendToDashboard(event, payload = {}) {
   try {
-    await fetch(URL, {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    await fetch(DASHBOARD_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ platform: "opencode", event, ...payload }),
-      signal: AbortSignal.timeout(2000),
+      body: JSON.stringify({
+        platform: "opencode",
+        event,
+        ...payload,
+      }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
   } catch {
-    // Non-blocking: fail silently if dashboard is offline
+    // Fail-soft: never block OpenCode if the dashboard receiver is unreachable
   }
 }
 
-export const DashboardPlugin = async () => ({
-  "tool.execute.before": async (input, output) =>
-    send("PreToolUse", { tool: input.tool, args: output ? output.args : "" }),
+export const DashboardPlugin = {
+  id: "dashboard-plugin",
+  setup: async (ctx) => {
+    // Subscribe to OpenCode native lifecycle event stream if supported
+    if (ctx?.event?.subscribe) {
+      try {
+        ctx.event.subscribe(async (event) => {
+          if (event?.type) {
+            await sendToDashboard(event.type, {
+              tool: event.data?.tool || event.data?.toolName || "",
+              args: event.data?.input || event.data?.args || "",
+            });
+          }
+        });
+      } catch {
+        // Fail-soft
+      }
+    }
 
-  "tool.execute.after": async (input, output) =>
-    send("PostToolUse", {
-      tool: input.tool,
-      args: typeof output?.output === "string" ? output.output.slice(0, 200) : "",
-    }),
-
-  event: async ({ event }) => {
-    if (event.type === "session.created") await send("SessionStart", {});
-    if (event.type === "session.idle") await send("Stop", {});
+    return {
+      "tool.execute.before": async (input, output) => {
+        await sendToDashboard("PreToolUse", {
+          tool: input?.tool || "",
+          args: output ? output.args : "",
+        });
+      },
+      "tool.execute.after": async (input, output) => {
+        await sendToDashboard("PostToolUse", {
+          tool: input?.tool || "",
+          args: typeof output?.output === "string" ? output.output.slice(0, 200) : "",
+        });
+      },
+    };
   },
-});
+};
 
 export default DashboardPlugin;
-
