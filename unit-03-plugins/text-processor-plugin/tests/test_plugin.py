@@ -62,4 +62,15 @@ class TestPluginBundleStructure:
         content = js_module.read_text(encoding="utf-8")
         assert "TextProcessorPlugin" in content
         assert "tool.execute.before" in content
+        assert "setup:" in content or "setup :" in content, "Plugin must provide setup function"
+        assert "id:" in content or 'id: "text-processor-plugin"' in content, "Plugin must provide id"
+
+    def test_package_json_declaration(self):
+        pkg_json = PLUGIN_ROOT / "package.json"
+        assert pkg_json.exists(), "Missing plugin package.json."
+        data = json.loads(pkg_json.read_text(encoding="utf-8"))
+        assert data.get("name") == "text-processor-plugin"
+        assert "main" in data
+        assert "exports" in data
+
 
